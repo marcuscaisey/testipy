@@ -1,0 +1,7 @@
+- test runner which runs tests and outputs TestResult
+- formatter which will take TestResults and output them to stdout
+- take test file as CLI input
+- group tests with class with set_up / tear_down
+- soft assertions
+- allow requiring assertions as well
+- subtests (in context manager?)

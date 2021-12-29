@@ -2,10 +2,10 @@ import textwrap
 import unittest
 
 from running import TestResult
-from formatting import format_for_cli
+from formatting import format_friendly
 
 
-class TestFormatForCLI(unittest.TestCase):
+class TestFormatFriendly(unittest.TestCase):
     longMessage = False
 
     def test_formats_a_single_passing_result_on_one_line(self):
@@ -13,7 +13,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_passes", is_pass=True),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = "test_passes PASS"
         self.assertEqual(
@@ -28,7 +28,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_passes_2", is_pass=True),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = dedent(
             """
@@ -47,7 +47,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_fails", is_pass=False),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = "test_fails FAIL"
         self.assertEqual(
@@ -62,7 +62,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_fails_2", is_pass=False),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = dedent(
             """
@@ -81,7 +81,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_fails", is_pass=False, message="failure message"),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = dedent(
             """
@@ -103,7 +103,7 @@ class TestFormatForCLI(unittest.TestCase):
             TestResult("test_fails_2", is_pass=False),
         ]
 
-        actual = format_for_cli(results)
+        actual = format_friendly(results)
 
         expected = dedent(
             """

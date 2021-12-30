@@ -1,6 +1,6 @@
 from running import TestContext
 
-from numbers import add, sub
+from test_data.numbers import add, sub
 
 
 def test_add(t: TestContext):

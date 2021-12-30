@@ -2,7 +2,7 @@ import importlib
 import inspect
 from typing import Any, Callable
 
-from running import TestFunction, TestContext
+from .running import TestFunction, TestContext
 
 
 def discover_tests(path: str) -> list[TestFunction]:

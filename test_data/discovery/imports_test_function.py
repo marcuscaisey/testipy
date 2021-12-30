@@ -1,4 +1,4 @@
-from running import TestContext
+from testipy import TestContext
 from test_data.discovery.one_valid_test import test_one
 
 

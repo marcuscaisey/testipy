@@ -1,6 +1,6 @@
 import unittest
 
-from discovery import discover_tests
+from .discovery import discover_tests
 
 
 class TestDiscoverTests(unittest.TestCase):

@@ -1,4 +1,4 @@
-from running import TestResult
+from .running import TestResult
 
 
 def format_friendly(results: list[TestResult]) -> str:

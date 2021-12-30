@@ -1,4 +1,4 @@
-from running import TestContext
+from testipy import TestContext
 
 
 def test_missing_test_context():

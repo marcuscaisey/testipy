@@ -1,6 +1,6 @@
 import unittest
 
-from running import TestContext, TestResult, run_tests
+from .running import TestContext, TestResult, run_tests
 
 
 class TestRunTest(unittest.TestCase):

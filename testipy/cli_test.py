@@ -2,7 +2,7 @@ import io
 import textwrap
 import unittest
 
-from cli import testipy
+from .cli import testipy
 
 
 class TestCLI(unittest.TestCase):

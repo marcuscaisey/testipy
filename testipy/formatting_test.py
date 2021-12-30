@@ -1,8 +1,8 @@
 import textwrap
 import unittest
 
-from running import TestResult
-from formatting import format_friendly
+from .running import TestResult
+from .formatting import format_friendly
 
 
 class TestFormatFriendly(unittest.TestCase):

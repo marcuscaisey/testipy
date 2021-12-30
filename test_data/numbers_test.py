@@ -1,4 +1,4 @@
-from running import TestContext
+from testipy import TestContext
 
 from test_data.numbers import add, sub
 

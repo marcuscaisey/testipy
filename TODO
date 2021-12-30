@@ -1,3 +1,7 @@
+- make TestContext.result private
+- don't duplicate dedent across test files
+- "bootstrap" tests by testing with testipy
+- add handling of invalid paths to discovery
 - test runner which runs tests and outputs TestResult
 - formatter which will take TestResults and output them to stdout
 - take test file as CLI input

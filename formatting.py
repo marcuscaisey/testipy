@@ -1,13 +1,3 @@
-"""
-Contains functions responsible for formatting test results which should be
-returned from a call to running.run_tests.
-
-Currently supported output formats:
-    - human readable
-
-Planned formats to add:
-    - xUnit XML for integration with build systems / IDEs etc
-"""
 from running import TestResult
 
 

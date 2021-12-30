@@ -1,7 +1,3 @@
-"""
-Defines run_tests which is the way that tests should be run. It returns a list
-of test results which can then be given to a formatter.
-"""
 import dataclasses
 from typing import Callable, Iterable
 

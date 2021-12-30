@@ -1,0 +1,19 @@
+from running import TestContext
+
+from numbers import add, sub
+
+
+def test_add(t: TestContext):
+    x, y = 2, 3
+    expected = 5
+    actual = add(x, y)
+    if not expected == actual:
+        t.fail(f"expected {x} + {y} to be {expected}, got {actual}")
+
+
+def test_sub(t: TestContext):
+    x, y = 2, 3
+    expected = -1
+    actual = sub(x, y)
+    if not expected == actual:
+        t.fail(f"expected {x} - {y} to be {expected}, got {actual}")

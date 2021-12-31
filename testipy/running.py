@@ -24,11 +24,11 @@ class TestContext:
         Args:
             test_name: The name of the test that this context is being used by
         """
-        self.result = TestResult(test_name)
+        self._result = TestResult(test_name)
 
     def fail(self, message: str = ""):
         """Fail the current test, optionally with a given failure message."""
-        self.result._fail(message)
+        self._result._fail(message)
 
 
 TestFunction = Callable[[TestContext], None]
@@ -47,5 +47,5 @@ def run_tests(tests: Iterable[TestFunction]) -> list[TestResult]:
     for test in tests:
         t = TestContext(test.__name__)
         test(t)
-        results.append(t.result)
+        results.append(t._result)
     return results

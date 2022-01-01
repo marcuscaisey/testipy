@@ -1,8 +1,8 @@
-import textwrap
 import unittest
 
 from .running import TestResult
 from .formatting import format_friendly
+from .common_test import dedent
 
 
 class TestFormatFriendly(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestFormatFriendly(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected {results} to be formatted as:\n\n{expected}\n\ngot:\n\n{actual}",
+            f"expected {results} to be formatted as:\n\n{expected}\ngot:\n\n{actual}",
         )
 
     def test_formats_a_single_passing_result_on_one_line(self):
@@ -22,7 +22,7 @@ class TestFormatFriendly(unittest.TestCase):
 
         actual = format_friendly(results)
 
-        expected = "test_passes PASS"
+        expected = "test_passes PASS\n"
         self.assertFormattedResultsEqual(results, expected, actual)
 
     def test_formats_multiple_passing_results_as_multiple_lines(self):
@@ -48,7 +48,7 @@ class TestFormatFriendly(unittest.TestCase):
 
         actual = format_friendly(results)
 
-        expected = "test_fails FAIL"
+        expected = "test_fails FAIL\n"
         self.assertFormattedResultsEqual(results, expected, actual)
 
     def test_formats_multiple_failing_results_as_multiple_lines(self):
@@ -125,7 +125,3 @@ class TestFormatFriendly(unittest.TestCase):
             """
         )
         self.assertFormattedResultsEqual(results, expected, actual)
-
-
-def dedent(s: str) -> str:
-    return textwrap.dedent(s).strip()

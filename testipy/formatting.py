@@ -15,4 +15,4 @@ def format_friendly(results: list[TestResult]) -> str:
         lines.append(f"{result.test_name} {pass_fail}")
         for message in result.messages:
             lines.append(f"    - {message}")
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n"

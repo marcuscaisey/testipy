@@ -1,8 +1,8 @@
 import io
-import textwrap
 import unittest
 
 from .cli import testipy
+from .common_test import dedent
 
 
 class TestCLI(unittest.TestCase):
@@ -26,9 +26,5 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected cli to output:\n\n{expected}\n\ngot:\n\n{actual}",
+            f"expected cli to output:\n\n{expected}\ngot:\n\n{actual}",
         )
-
-
-def dedent(s: str) -> str:
-    return textwrap.dedent(s).strip()

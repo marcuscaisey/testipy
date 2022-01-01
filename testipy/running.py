@@ -8,12 +8,13 @@ class TestResult:
 
     test_name: str
     is_pass: bool = True
-    message: str = ""
+    messages: list[str] = dataclasses.field(default_factory=list)
 
-    def _fail(self, message: str):
+    def _fail(self, message: str = ""):
         """Fail the current test."""
         self.is_pass = False
-        self.message = message
+        if message:
+            self.messages.append(message)
 
 
 class TestContext:

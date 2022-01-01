@@ -18,8 +18,10 @@ class TestCLI(unittest.TestCase):
             test_sub FAIL
                 - expected 2 - 3 to be -1, got 5
             test_multiple_failures FAIL
-                - failure message 1
-                - failure message 2
+                - failure message
+                - multiple failures are allowed in the same test
+            test_require_failure FAIL
+                - requiring a failure stops the test
             """
         )
         actual = out.getvalue()

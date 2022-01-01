@@ -88,6 +88,20 @@ class TestRunTest(unittest.TestCase):
             f"expected failing a test with messages: '{failure_message_1}', '{failure_message_2}' to return {expected}, got {actual}",
         )
 
+    def test_calling_fail_with_require_ends_test_right_away(self):
+        def test_fails(t: TestContext):
+            t.fail("failure message", require=True)
+            t.fail("won't reach here")
+
+        actual = run_tests([test_fails])
+
+        expected = [TestResult("test_fails", is_pass=False, messages=["failure message"])]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected failing a test with require to return {expected}, got {actual}",
+        )
+
     def test_running_multiple_tests_returns_a_result_for_each_test(self):
         def test_passes(t: TestContext):
             pass

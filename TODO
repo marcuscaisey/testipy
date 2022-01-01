@@ -1,7 +1,6 @@
 - "bootstrap" tests by testing with testipy
 - add handling of invalid paths to discovery
 - group tests with class with set_up / tear_down
-- allow requiring assertions as well
 - subtests (in context manager?)
 - output in cli and xml xUnit format
 - catch exceptions inside tests

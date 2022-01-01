@@ -2,6 +2,12 @@ import dataclasses
 from typing import Callable, Iterable
 
 
+class StopTest(Exception):
+    """Raised to signal that the current test should be stopped."""
+
+    pass
+
+
 @dataclasses.dataclass(order=False)
 class TestResult:
     """Object which contains information about a test run."""
@@ -27,9 +33,11 @@ class TestContext:
         """
         self._result = TestResult(test_name)
 
-    def fail(self, message: str = ""):
+    def fail(self, message: str = "", *, require=False):
         """Fail the current test, optionally with a given failure message."""
         self._result._fail(message)
+        if require:
+            raise StopTest()
 
 
 TestFunction = Callable[[TestContext], None]
@@ -44,9 +52,14 @@ def run_tests(tests: Iterable[TestFunction]) -> list[TestResult]:
     which do not fail any assertions, call fail on the TestContext, or raise an
     exception are deemed to have passed.
     """
-    results = []
-    for test in tests:
-        t = TestContext(test.__name__)
-        test(t)
-        results.append(t._result)
+    results = [_run_test(test) for test in tests]
     return results
+
+
+def _run_test(test: TestFunction) -> TestResult:
+    t = TestContext(test.__name__)
+    try:
+        test(t)
+    except StopTest:
+        pass
+    return t._result

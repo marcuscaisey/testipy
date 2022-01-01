@@ -1,6 +1,5 @@
 - "bootstrap" tests by testing with testipy
 - add handling of invalid paths to discovery
-- take test file as CLI input
 - group tests with class with set_up / tear_down
 - allow requiring assertions as well
 - subtests (in context manager?)

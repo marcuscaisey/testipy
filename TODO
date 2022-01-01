@@ -11,3 +11,4 @@
 - output in cli and xml xUnit format
 - new line at end of cli output
 - catch exceptions inside tests
+- colour output

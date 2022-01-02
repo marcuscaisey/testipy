@@ -25,6 +25,14 @@ def test_multiple_failures(t: TestContext):
     t.fail("multiple failures are allowed in the same test")
 
 
+def raises_exception():
+    raise ValueError("oh no!")
+
+
+def test_exceptions_error_the_test(t: TestContext):
+    raises_exception()
+
+
 def test_require_failure(t: TestContext):
     t.fail("requiring a failure stops the test", require=True)
     t.fail("won't reach here")

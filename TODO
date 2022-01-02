@@ -6,3 +6,5 @@
 - catch exceptions inside tests
 - colour output
 - test assertions like 'assert_equal'
+- indent multiline failure messages
+- move from list[TestResult] to TestResults class which contains: passed, failed, errored

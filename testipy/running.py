@@ -1,4 +1,3 @@
-import dataclasses
 from typing import Callable, Iterable
 
 
@@ -8,19 +7,38 @@ class StopTest(Exception):
     pass
 
 
-@dataclasses.dataclass(order=False)
 class TestResult:
     """Object which contains information about a test run."""
 
-    test_name: str
-    is_pass: bool = True
-    messages: list[str] = dataclasses.field(default_factory=list)
+    def __init__(
+        self,
+        test_name: str,
+        *,
+        is_pass: bool = True,
+        messages: list[str] = None,
+        error: Exception = None,
+    ):
+        self.test_name = test_name
+        self.is_pass = is_pass
+        self.messages = messages or []
+        self.error = error
 
     def _fail(self, message: str = ""):
         """Fail the current test."""
         self.is_pass = False
         if message:
             self.messages.append(message)
+
+    def __repr__(self) -> str:
+        args = [
+            repr(self.test_name),
+            f"is_pass={self.is_pass}",
+        ]
+        if self.messages:
+            args.append(f"messages={self.messages!r}")
+        if self.error:
+            args.append(f"error={self.error!r}")
+        return f"TestResult({', '.join(args)})"
 
 
 class TestContext:
@@ -62,4 +80,7 @@ def _run_test(test: TestFunction) -> TestResult:
         test(t)
     except StopTest:
         pass
+    except Exception as e:
+        t._result._fail()
+        t._result.error = e
     return t._result

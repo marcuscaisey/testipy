@@ -1,4 +1,5 @@
-from typing import Callable, Iterable
+import dataclasses
+from typing import Any, Callable, Iterable
 
 
 class StopTest(Exception):
@@ -7,53 +8,106 @@ class StopTest(Exception):
     pass
 
 
+@dataclasses.dataclass
 class TestResult:
-    """Object which contains information about a test run."""
+    """
+    The result of a test run.
 
-    def __init__(
-        self,
-        test_name: str,
-        *,
-        is_pass: bool = True,
-        messages: list[str] = None,
-        error: Exception = None,
-    ):
-        self.test_name = test_name
-        self.is_pass = is_pass
-        self.messages = messages or []
-        self.error = error
+    Attributes:
+        test_order: The order that this test ran in. Starts from 1.
+        test_name: The name of the test that ran
+    """
 
-    def _fail(self, message: str = ""):
-        """Fail the current test."""
-        self.is_pass = False
-        if message:
-            self.messages.append(message)
+    test_order: int
+    test_name: str
 
-    def __repr__(self) -> str:
-        args = [
-            repr(self.test_name),
-            f"is_pass={self.is_pass}",
-        ]
-        if self.messages:
-            args.append(f"messages={self.messages!r}")
-        if self.error:
-            args.append(f"error={self.error!r}")
-        return f"TestResult({', '.join(args)})"
+
+@dataclasses.dataclass
+class PassResult(TestResult):
+    """
+    The result of a passing test.
+
+    Attributes:
+        test_order: The order that this test ran in. Starts from 1.
+        test_name: The name of the test that ran
+    """
+
+    pass
+
+
+@dataclasses.dataclass
+class FailResult(TestResult):
+    """
+    The result of a failing test.
+
+    Attributes:
+        test_order: The order that the test ran in. Starts from 1.
+        test_name: The name of the test that ran
+        messages: The failure messages added during the test run
+    """
+
+    _: dataclasses.KW_ONLY
+    messages: list[str] = dataclasses.field(default_factory=list)
+
+
+@dataclasses.dataclass
+class ErrorResult(TestResult):
+    """
+    The result of an errored test.
+
+    Attributes:
+        test_order: The order that the test ran in. Starts from 1.
+        test_name: The name of the test that ran
+        error: The exception that was raised during the test run
+    """
+
+    error: Exception
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.test_order == other.test_order
+            and self.test_name == other.test_name
+            and type(self.error) is type(other.error)
+            and self.error.args == other.error.args
+        )
+
+
+@dataclasses.dataclass
+class TestResults:
+    """
+    The results of a group of tests that have been run together.
+
+    Attributes:
+        passed: The results of the tests that passed.
+        failed: The results of the tests that failed.
+        errored: The results of the tests that errored.
+    """
+
+    _: dataclasses.KW_ONLY
+    passed: list[PassResult] = dataclasses.field(default_factory=list)
+    failed: list[FailResult] = dataclasses.field(default_factory=list)
+    errored: list[ErrorResult] = dataclasses.field(default_factory=list)
+
+    @property
+    def count(self) -> int:
+        """The total number of tests results."""
+        return len(self.passed) + len(self.failed) + len(self.errored)
 
 
 class TestContext:
     """Object made available inside tests to manage test state."""
 
-    def __init__(self, test_name: str):
-        """
-        Args:
-            test_name: The name of the test that this context is being used by
-        """
-        self._result = TestResult(test_name)
+    def __init__(self):
+        self._passed = True
+        self._messages = []
 
     def fail(self, message: str = "", *, require=False):
         """Fail the current test, optionally with a given failure message."""
-        self._result._fail(message)
+        self._passed = False
+        if message:
+            self._messages.append(message)
         if require:
             raise StopTest()
 
@@ -61,7 +115,7 @@ class TestContext:
 TestFunction = Callable[[TestContext], None]
 
 
-def run_tests(tests: Iterable[TestFunction]) -> list[TestResult]:
+def run_tests(tests: Iterable[TestFunction]) -> TestResults:
     """
     Runs some tests functions and returns the result of each test.
 
@@ -70,17 +124,21 @@ def run_tests(tests: Iterable[TestFunction]) -> list[TestResult]:
     which do not fail any assertions, call fail on the TestContext, or raise an
     exception are deemed to have passed.
     """
-    results = [_run_test(test) for test in tests]
+    results = TestResults()
+    for i, test in enumerate(tests, 1):
+        t = TestContext()
+        try:
+            test(t)
+        except StopTest:
+            pass
+        except Exception as e:
+            result = ErrorResult(i, test.__name__, e)
+            results.errored.append(result)
+            continue
+        if t._passed:
+            result = PassResult(i, test.__name__)
+            results.passed.append(result)
+        else:
+            result = FailResult(i, test.__name__, messages=t._messages)
+            results.failed.append(result)
     return results
-
-
-def _run_test(test: TestFunction) -> TestResult:
-    t = TestContext(test.__name__)
-    try:
-        test(t)
-    except StopTest:
-        pass
-    except Exception as e:
-        t._result._fail()
-        t._result.error = e
-    return t._result

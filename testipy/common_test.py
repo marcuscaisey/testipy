@@ -1,3 +1,4 @@
+from typing import Callable
 import pathlib
 import textwrap
 
@@ -26,3 +27,8 @@ def get_project_root() -> pathlib.Path:
     common_test_path = pathlib.Path(__file__)
     # current path is $PROJECT_ROOT/testipy/common_test.py so need second parent
     return common_test_path.parents[1].absolute()
+
+
+def def_line(f: Callable) -> int:
+    """Returns the line that the given function was defined at."""
+    return f.__code__.co_firstlineno

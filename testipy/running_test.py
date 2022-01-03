@@ -1,9 +1,9 @@
 import unittest
 
-from .running import TestContext, TestResult, run_tests
+from .running import ErrorResult, FailResult, PassResult, TestContext, TestResults, run_tests
 
 
-class TestRunTest(unittest.TestCase):
+class TestRunTests(unittest.TestCase):
     longMessage = False
 
     def test_result_is_pass_when_fail_not_called_on_context(self):
@@ -12,8 +12,8 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_passes])
 
-        expected = [TestResult("test_passes", is_pass=True)]
-        self.assertResultsEqual(
+        expected = TestResults(passed=[PassResult(1, "test_passes")])
+        self.assertEqual(
             expected,
             actual,
             f"expected running a passing test to return {expected}, got {actual}",
@@ -25,8 +25,8 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = [TestResult("test_fails", is_pass=False)]
-        self.assertResultsEqual(
+        expected = TestResults(failed=[FailResult(1, "test_fails")])
+        self.assertEqual(
             expected,
             actual,
             f"expected running a failing test to return {expected}, got {actual}",
@@ -39,8 +39,8 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = [TestResult("test_fails", is_pass=False)]
-        self.assertResultsEqual(
+        expected = TestResults(failed=[FailResult(1, "test_fails")])
+        self.assertEqual(
             expected,
             actual,
             f"expected running a failing test to return {expected}, got {actual}",
@@ -54,14 +54,16 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = [TestResult("test_fails", is_pass=False, messages=[failure_message])]
-        self.assertResultsEqual(
+        expected = TestResults(failed=[FailResult(1, "test_fails", messages=[failure_message])])
+        self.assertEqual(
             expected,
             actual,
             f"expected failing a test with message: '{failure_message}' to return {expected}, got {actual}",
         )
 
-    def test_multiple_messages_are_set_on_result_when_fail_called_multiple_times_with_message(self):
+    def test_multiple_messages_are_set_on_result_when_fail_called_multiple_times_with_message(
+        self,
+    ):
         failure_message_1 = "failure message 1"
         failure_message_2 = "failure message 2"
 
@@ -72,17 +74,10 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = [
-            TestResult(
-                "test_fails",
-                is_pass=False,
-                messages=[
-                    failure_message_1,
-                    failure_message_2,
-                ],
-            )
-        ]
-        self.assertResultsEqual(
+        expected = TestResults(
+            failed=[FailResult(1, "test_fails", messages=[failure_message_1, failure_message_2])]
+        )
+        self.assertEqual(
             expected,
             actual,
             f"expected failing a test with messages: '{failure_message_1}', '{failure_message_2}' to return {expected}, got {actual}",
@@ -95,8 +90,8 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = [TestResult("test_fails", is_pass=False, messages=["failure message"])]
-        self.assertResultsEqual(
+        expected = TestResults(failed=[FailResult(1, "test_fails", messages=["failure message"])])
+        self.assertEqual(
             expected,
             actual,
             f"expected failing a test with require to return {expected}, got {actual}",
@@ -108,8 +103,8 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_errors])
 
-        expected = [TestResult("test_errors", is_pass=False, error=ValueError("oh no!"))]
-        self.assertResultsEqual(
+        expected = TestResults(errored=[ErrorResult(1, "test_errors", ValueError("oh no!"))])
+        self.assertEqual(
             expected,
             actual,
             f"expected erroring a test to return {expected}, got {actual}",
@@ -124,11 +119,10 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_passes_1, test_passes_2])
 
-        expected = [
-            TestResult("test_passes_1", is_pass=True),
-            TestResult("test_passes_2", is_pass=True),
-        ]
-        self.assertResultsEqual(
+        expected = TestResults(
+            passed=[PassResult(1, "test_passes_1"), PassResult(2, "test_passes_2")]
+        )
+        self.assertEqual(
             expected,
             actual,
             f"expected running multiple tests together to return {expected}, got {actual}",
@@ -146,31 +140,52 @@ class TestRunTest(unittest.TestCase):
 
         actual = run_tests([test_fails, test_errors, test_passes])
 
-        expected = [
-            TestResult("test_fails", is_pass=False),
-            TestResult("test_errors", is_pass=False, error=ValueError("oh no!")),
-            TestResult("test_passes", is_pass=True),
-        ]
-        self.assertResultsEqual(
+        expected = TestResults(
+            passed=[PassResult(3, "test_passes")],
+            failed=[FailResult(1, "test_fails")],
+            errored=[ErrorResult(2, "test_errors", ValueError("oh no!"))],
+        )
+        self.assertEqual(
             expected,
             actual,
             f"expected running mix of passing / failing / erroring tests to return {expected}, got {actual}",
         )
 
-    def assertResultsEqual(
-        self, expected: list[TestResult], actual: list[TestResult], message: str
-    ):
-        self.assertEqual(len(expected), len(actual), message)
-        for expected_result, actual_result in zip(expected, actual):
-            if not test_results_equal(expected_result, actual_result):
-                self.fail(message)
 
+class TestTestResults(unittest.TestCase):
+    longMessage = False
 
-def test_results_equal(r1: TestResult, r2: TestResult) -> bool:
-    if not (
-        r1.test_name == r2.test_name and r1.is_pass == r2.is_pass and r1.messages == r2.messages
-    ):
-        return False
-    if r1.error is None or r2.error is None:
-        return r1.error is None and r2.error is None
-    return type(r1.error) is type(r2.error) and r1.error.args == r2.error.args
+    def test_count_total_number_of_results(self):
+        results = TestResults(
+            passed=[PassResult(1, "test_passes_1"), PassResult(2, "test_passes_2")],
+            failed=[FailResult(3, "test_fails")],
+            errored=[ErrorResult(4, "test_errors", ValueError("oh no"))],
+        )
+
+        actual = results.count
+
+        expected = 4
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected count of {results} to be {expected}, got {actual}",
+        )
+
+    def test_equal_returns_true_between_equal_results(self):
+        results = TestResults(
+            passed=[PassResult(1, "test_passes_1")],
+            failed=[FailResult(2, "test_fails")],
+            errored=[ErrorResult(3, "test_errors", ValueError("oh no"))],
+        )
+
+        self.assertEqual(results, results, f"expected {results} to be equal to itself")
+
+    def test_equal_returns_false_when_comparing_against_other_types(self):
+        results = TestResults(
+            passed=[PassResult(1, "test_passes_1")],
+            failed=[FailResult(2, "test_fails")],
+            errored=[ErrorResult(3, "test_errors", ValueError("oh no"))],
+        )
+        other = [1, 2, 3]
+
+        self.assertNotEqual(results, other, f"expected {results} to not equal {other}")

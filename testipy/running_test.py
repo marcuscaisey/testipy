@@ -150,24 +150,69 @@ class TestRunTests(unittest.TestCase):
         )
 
 
-# class TestTestResults(unittest.TestCase):
-#     longMessage = False
+class TestAssertEqual(unittest.TestCase):
+    longMessage = False
 
-#     def test_equal_returns_true_between_equal_results(self):
-#         results = TestResults(
-#             passed=[PassResult(1, "test_passes_1")],
-#             failed=[FailResult(2, "test_fails")],
-#             errored=[ErrorResult(3, "test_errors", ValueError("oh no"))],
-#         )
+    def test_test_passes_if_objects_are_equal(self):
+        def test_passes(t: TestContext):
+            t.assert_equal(2, 2)
 
-#         self.assertEqual(results, results, f"expected {results} to be equal to itself")
+        actual = run_tests([test_passes])
 
-#     def test_equal_returns_false_when_comparing_against_other_types(self):
-#         results = TestResults(
-#             passed=[PassResult(1, "test_passes_1")],
-#             failed=[FailResult(2, "test_fails")],
-#             errored=[ErrorResult(3, "test_errors", ValueError("oh no"))],
-#         )
-#         other = [1, 2, 3]
+        expected = TestResults(passed=[PassResult(test_passes)])
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected test to pass when asserting that two equal objects are equal, got {actual}",
+        )
 
-#         self.assertNotEqual(results, other, f"expected {results} to not equal {other}")
+    def test_test_fails_with_default_message_if_objects_are_not_equal(self):
+        def test_fails(t: TestContext):
+            t.assert_equal(2, 3)
+
+        actual = run_tests([test_fails])
+
+        expected = TestResults(
+            failed=[FailResult(test_fails, messages=["Expected 2 and 3 to be equal"])]
+        )
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected test to fail when asserting that two unequal objects are equal, got {actual}",
+        )
+
+    def test_test_fails_with_custom_message_if_given(self):
+        def test_fails(t: TestContext):
+            t.assert_equal(2, 3, "this is most disappointing")
+
+        actual = run_tests([test_fails])
+
+        expected = TestResults(
+            failed=[
+                FailResult(
+                    test_fails,
+                    messages=["Expected 2 and 3 to be equal; this is most disappointing"],
+                )
+            ]
+        )
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected test to fail with custom failure message, got {actual}",
+        )
+
+    def test_calling_with_require_ends_test_right_away(self):
+        def test_fails(t: TestContext):
+            t.assert_equal(2, 3, require=True)
+            t.fail("won't reach here")
+
+        actual = run_tests([test_fails])
+
+        expected = TestResults(
+            failed=[FailResult(test_fails, messages=["Expected 2 and 3 to be equal"])]
+        )
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected asserting with require to return {expected}, got {actual}",
+        )

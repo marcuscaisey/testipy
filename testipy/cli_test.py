@@ -17,7 +17,7 @@ class TestCLI(unittest.TestCase):
             """
             test_add PASS
             test_sub FAIL
-                - expected 2 - 3 to be -1, got 5
+                - Expected -1 and 5 to be equal; this is most disappointing
             test_multiple_failures FAIL
                 - failure message
                 - multiple failures are allowed in the same test

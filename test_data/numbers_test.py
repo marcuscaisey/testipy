@@ -15,8 +15,7 @@ def test_sub(t: TestContext):
     x, y = 2, 3
     expected = -1
     actual = sub(x, y)
-    if not expected == actual:
-        t.fail(f"expected {x} - {y} to be {expected}, got {actual}")
+    t.assert_equal(expected, actual, "this is most disappointing")
 
 
 def test_multiple_failures(t: TestContext):

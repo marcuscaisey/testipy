@@ -15,13 +15,21 @@ class TestContext:
         self._passed = True
         self._messages = []
 
-    def fail(self, message: str = "", *, require=False):
+    def fail(self, message: str = "", *, require: bool = False):
         """Fail the current test, optionally with a given failure message."""
         self._passed = False
         if message:
             self._messages.append(message)
         if require:
             raise StopTest()
+
+    def assert_equal(self, expected: Any, actual: Any, message: str = "", *, require: bool = False):
+        """Assert that expected and actual are equal, failing the test if not."""
+        if expected != actual:
+            failure_message = f"Expected {expected} and {actual} to be equal"
+            if message:
+                failure_message += f"; {message}"
+            self.fail(failure_message, require=require)
 
 
 TestFunction = Callable[[TestContext], None]

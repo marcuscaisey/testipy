@@ -3,7 +3,6 @@
 - group tests with class with set_up / tear_down
 - subtests (in context manager?)
 - output in cli and xml xUnit format
-- catch exceptions inside tests
 - colour output
 - test assertions like 'assert_equal'
 - indent multiline failure messages

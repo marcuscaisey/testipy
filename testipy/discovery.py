@@ -19,7 +19,7 @@ def discover_tests(path: str) -> list[TestFunction]:
     """
     module_name = path.replace("/", ".").removesuffix(".py")
     module = importlib.import_module(module_name)
-    tests = [value for _, value in inspect.getmembers(module, _is_test_function)]
+    tests = [value for _, value in inspect.getmembers(module, predicate=_is_test_function)]
     tests = filter(_defined_in_module(module_name), tests)
     return sorted(tests, key=_definition_line)
 

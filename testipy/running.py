@@ -1,3 +1,4 @@
+from __future__ import annotations
 import dataclasses
 from typing import Any, Callable, Iterable
 
@@ -41,10 +42,13 @@ class PassResult:
     The result of a passing test.
 
     Attributes:
-        test: The test that ran.
+        test_name: The name of the test.
+        run_order: The order that the test was run in.
     """
 
-    test: TestFunction
+    test_name: str
+    _: dataclasses.KW_ONLY
+    run_order: int = 1
 
 
 @dataclasses.dataclass
@@ -53,12 +57,14 @@ class FailResult:
     The result of a failing test.
 
     Attributes:
-        test: The test that ran.
+        test_name: The name of the test.
+        run_order: The order that the test was run in.
         messages: The failure messages added during the test run.
     """
 
-    test: TestFunction
+    test_name: str
     _: dataclasses.KW_ONLY
+    run_order: int = 1
     messages: list[str] = dataclasses.field(default_factory=list)
 
 
@@ -68,21 +74,20 @@ class ErrorResult:
     The result of an errored test.
 
     Attributes:
-        test: The test that ran.
-        error: The exception that was raised during the test run
+        name: The name of the test.
+        order: The order that the test was run in.
+        error: The exception that was raised during the test run.
     """
 
-    test: TestFunction
+    test_name: str
+    _: dataclasses.KW_ONLY
+    run_order: int = 1
     error: Exception
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, type(self)):
             return False
-        return (
-            self.test is other.test
-            and type(self.error) is type(other.error)
-            and self.error.args == other.error.args
-        )
+        return self.test_name == other.test_name and self.error.args == other.error.args
 
 
 @dataclasses.dataclass
@@ -117,17 +122,19 @@ def run_tests(tests: Iterable[TestFunction]) -> TestResults:
     exception are deemed to have passed.
     """
     results = TestResults()
-    for test in tests:
+    for run_order, test in enumerate(tests, 1):
         t = TestContext()
         try:
             test(t)
         except StopTest:
             pass
         except Exception as e:
-            results.errored.append(ErrorResult(test, e))
+            results.errored.append(ErrorResult(test.__name__, run_order=run_order, error=e))
             continue
         if t._passed:
-            results.passed.append(PassResult(test))
+            results.passed.append(PassResult(test.__name__, run_order=run_order))
         else:
-            results.failed.append(FailResult(test, messages=t._messages))
+            results.failed.append(
+                FailResult(test.__name__, run_order=run_order, messages=t._messages)
+            )
     return results

@@ -12,7 +12,7 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_passes])
 
-        expected = TestResults(passed=[PassResult(test_passes)])
+        expected = TestResults(passed=[PassResult("test_passes")])
         self.assertEqual(
             expected,
             actual,
@@ -25,7 +25,7 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = TestResults(failed=[FailResult(test_fails)])
+        expected = TestResults(failed=[FailResult("test_fails")])
         self.assertEqual(
             expected,
             actual,
@@ -39,7 +39,7 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = TestResults(failed=[FailResult(test_fails)])
+        expected = TestResults(failed=[FailResult("test_fails")])
         self.assertEqual(
             expected,
             actual,
@@ -54,7 +54,7 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = TestResults(failed=[FailResult(test_fails, messages=[failure_message])])
+        expected = TestResults(failed=[FailResult("test_fails", messages=[failure_message])])
         self.assertEqual(
             expected,
             actual,
@@ -75,7 +75,7 @@ class TestRunTests(unittest.TestCase):
         actual = run_tests([test_fails])
 
         expected = TestResults(
-            failed=[FailResult(test_fails, messages=[failure_message_1, failure_message_2])]
+            failed=[FailResult("test_fails", messages=[failure_message_1, failure_message_2])]
         )
         self.assertEqual(
             expected,
@@ -90,7 +90,7 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_fails])
 
-        expected = TestResults(failed=[FailResult(test_fails, messages=["failure message"])])
+        expected = TestResults(failed=[FailResult("test_fails", messages=["failure message"])])
         self.assertEqual(
             expected,
             actual,
@@ -103,23 +103,28 @@ class TestRunTests(unittest.TestCase):
 
         actual = run_tests([test_errors])
 
-        expected = TestResults(errored=[ErrorResult(test_errors, ValueError("oh no!"))])
+        expected = TestResults(errored=[ErrorResult("test_errors", error=ValueError("oh no!"))])
         self.assertEqual(
             expected,
             actual,
             f"expected erroring a test to return {expected}, got {actual}",
         )
 
-    def test_running_multiple_tests_returns_a_result_for_each_test(self):
-        def test_passes_1(t: TestContext):
+    def test_running_multiple_tests_returns_a_result_for_each_test_with_correct_order(self):
+        def test_passes_2(t: TestContext):
             pass
 
-        def test_passes_2(t: TestContext):
+        def test_passes_1(t: TestContext):
             pass
 
         actual = run_tests([test_passes_1, test_passes_2])
 
-        expected = TestResults(passed=[PassResult(test_passes_1), PassResult(test_passes_2)])
+        expected = TestResults(
+            passed=[
+                PassResult("test_passes_1", run_order=1),
+                PassResult("test_passes_2", run_order=2),
+            ]
+        )
         self.assertEqual(
             expected,
             actual,
@@ -139,9 +144,9 @@ class TestRunTests(unittest.TestCase):
         actual = run_tests([test_fails, test_errors, test_passes])
 
         expected = TestResults(
-            passed=[PassResult(test_passes)],
-            failed=[FailResult(test_fails)],
-            errored=[ErrorResult(test_errors, ValueError("oh no!"))],
+            passed=[PassResult("test_passes", run_order=3)],
+            failed=[FailResult("test_fails", run_order=1)],
+            errored=[ErrorResult("test_errors", run_order=2, error=ValueError("oh no!"))],
         )
         self.assertEqual(
             expected,
@@ -159,7 +164,7 @@ class TestAssertEqual(unittest.TestCase):
 
         actual = run_tests([test_passes])
 
-        expected = TestResults(passed=[PassResult(test_passes)])
+        expected = TestResults(passed=[PassResult("test_passes")])
         self.assertEqual(
             expected,
             actual,
@@ -173,7 +178,7 @@ class TestAssertEqual(unittest.TestCase):
         actual = run_tests([test_fails])
 
         expected = TestResults(
-            failed=[FailResult(test_fails, messages=["Expected 2 and 3 to be equal"])]
+            failed=[FailResult("test_fails", messages=["Expected 2 and 3 to be equal"])]
         )
         self.assertEqual(
             expected,
@@ -190,7 +195,7 @@ class TestAssertEqual(unittest.TestCase):
         expected = TestResults(
             failed=[
                 FailResult(
-                    test_fails,
+                    "test_fails",
                     messages=["Expected 2 and 3 to be equal; this is most disappointing"],
                 )
             ]
@@ -209,7 +214,7 @@ class TestAssertEqual(unittest.TestCase):
         actual = run_tests([test_fails])
 
         expected = TestResults(
-            failed=[FailResult(test_fails, messages=["Expected 2 and 3 to be equal"])]
+            failed=[FailResult("test_fails", messages=["Expected 2 and 3 to be equal"])]
         )
         self.assertEqual(
             expected,

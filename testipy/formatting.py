@@ -27,31 +27,31 @@ def format_results_friendly(results: TestResults) -> str:
 
 
 class _FriendlyResultsFormatter:
+    # TODO: take this as input as a config parameter instead
     INDENT_SIZE = 4
 
     def __init__(self):
         self._formatted_results = []
 
     def add_pass_result(self, result: PassResult):
-        formatted = f"{result.test.__name__} PASS"
-        self._insert_result(result.test, formatted)
+        formatted = f"{result.test_name} PASS"
+        self._insert_result(result.run_order, formatted)
 
     def add_fail_result(self, result: FailResult):
-        lines = [f"{result.test.__name__} FAIL"]
+        lines = [f"{result.test_name} FAIL"]
         lines.extend(self._indent(f"- {message}") for message in result.messages)
         formatted = "\n".join(lines)
-        self._insert_result(result.test, formatted)
+        self._insert_result(result.run_order, formatted)
 
     def add_error_result(self, result: ErrorResult):
         traceback = self._get_traceback_without_first_stack_trace(result.error)
-        lines = [f"{result.test.__name__} ERROR"]
+        lines = [f"{result.test_name} ERROR"]
         lines.extend(self._indent(line) for line in traceback.splitlines())
         formatted = "\n".join(lines)
-        self._insert_result(result.test, formatted)
+        self._insert_result(result.run_order, formatted)
 
-    def _insert_result(self, test: Callable, formatted_result: str):
-        test_def_line = test.__code__.co_firstlineno
-        bisect.insort(self._formatted_results, (test_def_line, formatted_result))
+    def _insert_result(self, run_order: int, formatted_result: str):
+        bisect.insort(self._formatted_results, (run_order, formatted_result))
 
     def print(self) -> str:
         return "\n".join(result for _, result in self._formatted_results) + "\n"

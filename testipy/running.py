@@ -1,6 +1,6 @@
 from __future__ import annotations
 import dataclasses
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, Iterable, Union
 
 
 class StopTest(Exception):
@@ -38,50 +38,20 @@ TestFunction = Callable[[TestContext], None]
 
 @dataclasses.dataclass
 class PassResult:
-    """
-    The result of a passing test.
-
-    Attributes:
-        test_name: The name of the test.
-        run_order: The order that the test was run in.
-    """
-
     test_name: str
-    _: dataclasses.KW_ONLY
-    run_order: int = 1
 
 
 @dataclasses.dataclass
 class FailResult:
-    """
-    The result of a failing test.
-
-    Attributes:
-        test_name: The name of the test.
-        run_order: The order that the test was run in.
-        messages: The failure messages added during the test run.
-    """
-
     test_name: str
     _: dataclasses.KW_ONLY
-    run_order: int = 1
     messages: list[str] = dataclasses.field(default_factory=list)
 
 
 @dataclasses.dataclass
 class ErrorResult:
-    """
-    The result of an errored test.
-
-    Attributes:
-        name: The name of the test.
-        order: The order that the test was run in.
-        error: The exception that was raised during the test run.
-    """
-
     test_name: str
     _: dataclasses.KW_ONLY
-    run_order: int = 1
     error: Exception
 
     def __eq__(self, other: Any) -> bool:
@@ -90,29 +60,7 @@ class ErrorResult:
         return self.test_name == other.test_name and self.error.args == other.error.args
 
 
-@dataclasses.dataclass
-class TestResults:
-    """
-    The results of a group of tests that have been run together.
-
-    Attributes:
-        passed: The results of the tests that passed.
-        failed: The results of the tests that failed.
-        errored: The results of the tests that errored.
-    """
-
-    _: dataclasses.KW_ONLY
-    passed: list[PassResult] = dataclasses.field(default_factory=list)
-    failed: list[FailResult] = dataclasses.field(default_factory=list)
-    errored: list[ErrorResult] = dataclasses.field(default_factory=list)
-
-    @property
-    def count(self) -> int:
-        """The total number of tests results."""
-        return len(self.passed) + len(self.failed) + len(self.errored)
-
-
-def run_tests(tests: Iterable[TestFunction]) -> TestResults:
+def run_tests(tests: Iterable[TestFunction]) -> list[Union[PassResult, FailResult, ErrorResult]]:
     """
     Runs some tests functions and returns the result of each test.
 
@@ -121,20 +69,18 @@ def run_tests(tests: Iterable[TestFunction]) -> TestResults:
     which do not fail any assertions, call fail on the TestContext, or raise an
     exception are deemed to have passed.
     """
-    results = TestResults()
-    for run_order, test in enumerate(tests, 1):
+    results: list[Union[PassResult, FailResult, ErrorResult]] = []
+    for test in tests:
         t = TestContext()
         try:
             test(t)
         except StopTest:
             pass
         except Exception as e:
-            results.errored.append(ErrorResult(test.__name__, run_order=run_order, error=e))
+            results.append(ErrorResult(test.__name__, error=e))
             continue
         if t._passed:
-            results.passed.append(PassResult(test.__name__, run_order=run_order))
+            results.append(PassResult(test.__name__))
         else:
-            results.failed.append(
-                FailResult(test.__name__, run_order=run_order, messages=t._messages)
-            )
+            results.append(FailResult(test.__name__, messages=t._messages))
     return results

@@ -1,39 +1,33 @@
 import unittest
 
-from .running import TestResults, PassResult, FailResult, ErrorResult
-from .formatting import format_results_friendly
+from .running import PassResult, FailResult, ErrorResult
+from .formatting import FriendlyResultsFormatter
 from .common_test import dedent, get_project_root, def_line
 
 
-class TestFormatResultsFriendly(unittest.TestCase):
+class TestFriendlyResultsFormatter(unittest.TestCase):
     longMessage = False
 
     def test_formats_passing_results_as_a_single_line(self):
-        results = TestResults(
-            passed=[PassResult("test_passes")],
-        )
+        results = [PassResult("test_passes")]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = "test_passes PASS\n"
         self.assertFormattedResultsEqual(expected, actual)
 
     def test_formats_failing_results_without_messages_as_a_single_line(self):
-        results = TestResults(
-            failed=[FailResult("test_fails")],
-        )
+        results = [FailResult("test_fails")]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = "test_fails FAIL\n"
         self.assertFormattedResultsEqual(expected, actual)
 
     def test_indents_message_on_next_line_when_failing_result_has_message(self):
-        results = TestResults(
-            failed=[FailResult("test_fails", messages=["failure message"])],
-        )
+        results = [FailResult("test_fails", messages=["failure message"])]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = dedent(
             """
@@ -44,11 +38,9 @@ class TestFormatResultsFriendly(unittest.TestCase):
         self.assertFormattedResultsEqual(expected, actual)
 
     def test_indents_messages_on_next_line_when_failing_result_has_multiple_messages(self):
-        results = TestResults(
-            failed=[FailResult("test_fails", messages=["failure message 1", "failure message 2"])],
-        )
+        results = [FailResult("test_fails", messages=["failure message 1", "failure message 2"])]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = dedent(
             """
@@ -72,11 +64,9 @@ class TestFormatResultsFriendly(unittest.TestCase):
         except ValueError as e:
             error = e
 
-        results = TestResults(
-            errored=[ErrorResult("test_errors", error=error)],
-        )
+        results = [ErrorResult("test_errors", error=error)]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = dedent(
             """
@@ -95,15 +85,9 @@ class TestFormatResultsFriendly(unittest.TestCase):
         )
         self.assertFormattedResultsEqual(expected, actual)
 
-    def test_formats_multiple_results_as_multiple_lines_sorted_by_test_order(self):
-        def test_fails_1():
-            pass
-
+    def test_formats_multiple_results_as_multiple_lines_in_same_order(self):
         def test_errors():
             raises_exception()
-
-        def test_fails_2():
-            pass
 
         def raises_exception():
             raise ValueError("oh no!")
@@ -113,19 +97,15 @@ class TestFormatResultsFriendly(unittest.TestCase):
         except ValueError as e:
             error = e
 
-        results = TestResults(
-            passed=[
-                PassResult("test_passes_1", run_order=1),
-                PassResult("test_passes_2", run_order=4),
-            ],
-            failed=[
-                FailResult("test_fails_1", run_order=2, messages=["failure message"]),
-                FailResult("test_fails_2", run_order=5),
-            ],
-            errored=[ErrorResult("test_errors", run_order=3, error=error)],
-        )
+        results = [
+            PassResult("test_passes_1"),
+            FailResult("test_fails_1", messages=["failure message"]),
+            ErrorResult("test_errors", error=error),
+            PassResult("test_passes_2"),
+            FailResult("test_fails_2"),
+        ]
 
-        actual = format_results_friendly(results)
+        actual = FriendlyResultsFormatter(results).format()
 
         expected = dedent(
             """

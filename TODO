@@ -5,3 +5,5 @@
 - output in cli and xml xUnit format
 - colour output
 - indent multiline failure messages
+- find cleaner way to test traceback formatting
+- add flake8 / mypy as pre-commit hooks

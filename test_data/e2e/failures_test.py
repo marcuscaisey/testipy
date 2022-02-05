@@ -1,4 +1,3 @@
-from test_data.e2e.numbers import add
 from testipy import TestContext
 
 

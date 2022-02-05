@@ -1,29 +1,28 @@
 import io
 import textwrap
 import traceback as tb
-from typing import Union
 
-from .running import ErrorResult, FailResult, PassResult
+from ..running import ErrorResult, FailResult, PassResult, TestResults
 
 
-class FriendlyResultsFormatter:
+class FriendlyFormatter:
+    # TODO: update this to be accurate
     """
     Formats test results in a friendly human-readable way.
 
     The format for each result is:
         $TEST_NAME (PASS | FAIL | ERROR)
             [$FAILURE_MESSAGES | $ERROR_TRACEBACK]
-
-    Results are sorted in the order of their test definitions.
     """
 
     # TODO: take this as input as a config parameter instead
     INDENT_SIZE = 4
 
-    def __init__(self, results: list[Union[PassResult, FailResult, ErrorResult]]):
+    def __init__(self, results: TestResults, test_prefix: str = ""):
         self._results = results
+        self._test_prefix = test_prefix
 
-    def format(self) -> str:
+    def format(self, *, trailing_new_line=True) -> str:
         formatted_results = []
         for result in self._results:
             if isinstance(result, PassResult):
@@ -32,20 +31,28 @@ class FriendlyResultsFormatter:
                 formatted_results.append(self._format_fail_result(result))
             elif isinstance(result, ErrorResult):
                 formatted_results.append(self._format_error_result(result))
-        return "\n".join(formatted_results) + "\n"
+        formatted = "\n".join(formatted_results)
+        if trailing_new_line:
+            formatted += "\n"
+        return formatted
 
     def _format_pass_result(self, result: PassResult) -> str:
-        return f"{result.test_name} PASS"
+        lines = [f"{self._test_prefix}{result.test_name} PASS"]
+        lines.extend(self._format_sub_results(result.test_name, result.sub_results))
+        return "\n".join(lines)
 
     def _format_fail_result(self, result: FailResult) -> str:
-        lines = [f"{result.test_name} FAIL"]
+        lines = [f"{self._test_prefix}{result.test_name} FAIL"]
         lines.extend(self._indent(f"- {message}") for message in result.messages)
+        lines.extend(self._format_sub_results(result.test_name, result.sub_results))
         return "\n".join(lines)
 
     def _format_error_result(self, result: ErrorResult) -> str:
-        traceback = self._get_traceback_without_first_stack_trace(result.error)
-        lines = [f"{result.test_name} ERROR"]
-        lines.extend(self._indent(line) for line in traceback.splitlines())
+        lines = [f"{self._test_prefix}{result.test_name} ERROR"]
+        if result.error:
+            traceback = self._get_traceback_without_first_stack_trace(result.error)
+            lines.extend(self._indent(line) for line in traceback.splitlines())
+        lines.extend(self._format_sub_results(result.test_name, result.sub_results))
         return "\n".join(lines)
 
     def _get_traceback_without_first_stack_trace(self, e: Exception) -> str:
@@ -66,3 +73,11 @@ class FriendlyResultsFormatter:
 
     def _indent(self, s: str) -> str:
         return textwrap.indent(s, self.INDENT_SIZE * " ")
+
+    def _format_sub_results(self, test_name: str, sub_results: TestResults) -> list[str]:
+        lines: list[str] = []
+        if sub_results:
+            formatter = FriendlyFormatter(sub_results, test_prefix=test_name + "/")
+            formatted = formatter.format(trailing_new_line=False)
+            lines.append(formatted)
+        return lines

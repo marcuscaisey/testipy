@@ -3,14 +3,14 @@ from typing import TextIO
 
 from .discovery import discover_tests
 from .running import run_tests
-from .formatting import FriendlyResultsFormatter
+from .formatting import FriendlyFormatter
 
 
 def testipy(path: str, out: TextIO):
     """Run the tests at the given path, outputting the results"""
     tests = discover_tests(path)
     results = run_tests(tests)
-    formatter = FriendlyResultsFormatter(results)
+    formatter = FriendlyFormatter(results)
     out.write(formatter.format())
 
 

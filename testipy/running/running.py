@@ -23,7 +23,9 @@ def run_tests(tests: Iterable[Union[TestFunction, type]]) -> TestResults:
             test_class = test
             sub_results = _run_test_class(test_class)
             result_type = _get_overall_result_type(sub_results)
-            results.append(result_type(test_class.__name__, sub_results=sub_results))  # type: ignore[arg-type]
+            results.append(
+                result_type(test_class.__name__, sub_results=sub_results),
+            )  # type: ignore[arg-type]
 
     return results
 

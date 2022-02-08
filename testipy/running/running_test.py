@@ -456,7 +456,7 @@ class TestClassBasedTests(unittest.TestCase):
             f"got {actual}",
         )
 
-    def test_methods_(self):
+    def test_invalid_test_methods_are_skipped(self):
         class TestFails:
             def foo(self):
                 pass

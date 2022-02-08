@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import dataclasses
-from typing import Union, Optional, Any
+from typing import Sequence, Union, Optional, Any
 
 
 @dataclasses.dataclass
 class PassResult:
     test_name: str
     _: dataclasses.KW_ONLY
-    sub_results: list[PassResult] = dataclasses.field(default_factory=list)
+    sub_results: Sequence[PassResult] = dataclasses.field(default_factory=list)
 
     def __repr__(self) -> str:
         args = [repr(self.test_name)]
@@ -23,7 +23,7 @@ class FailResult:
     test_name: str
     _: dataclasses.KW_ONLY
     messages: list[str] = dataclasses.field(default_factory=list)
-    sub_results: list[Union[PassResult, FailResult]] = dataclasses.field(default_factory=list)
+    sub_results: Sequence[Union[PassResult, FailResult]] = dataclasses.field(default_factory=list)
 
     def __repr__(self) -> str:
         args = [repr(self.test_name)]
@@ -40,7 +40,7 @@ class ErrorResult:
     test_name: str
     _: dataclasses.KW_ONLY
     error: Optional[Exception] = None
-    sub_results: list[Union[PassResult, FailResult, ErrorResult]] = dataclasses.field(
+    sub_results: Sequence[Union[PassResult, FailResult, ErrorResult]] = dataclasses.field(
         default_factory=list
     )
 
@@ -64,4 +64,4 @@ class ErrorResult:
 
 
 TestResult = Union[PassResult, FailResult, ErrorResult]
-TestResults = list[TestResult]
+TestResults = Sequence[TestResult]

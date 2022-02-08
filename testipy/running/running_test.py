@@ -153,7 +153,7 @@ class TestFunctionBasedTests(unittest.TestCase):
 
 
 class TestClassBasedTests(unittest.TestCase):
-    longMessage = None
+    longMessage = False
 
     def test_result_is_pass_with_pass_sub_result_when_fail_not_called_on_context(self):
         class TestPasses:

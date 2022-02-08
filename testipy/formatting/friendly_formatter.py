@@ -5,6 +5,10 @@ import traceback as tb
 from ..running import ErrorResult, FailResult, PassResult, TestResults
 
 
+class NoNextTracebackError(Exception):
+    pass
+
+
 class FriendlyFormatter:
     # TODO: update this to be accurate
     """
@@ -62,6 +66,10 @@ class FriendlyFormatter:
         # always have a call like test_xxx as the first stack trace entry followed
         # by at least one other entry which is where the exception was actually
         # raised
+        if not e.__traceback__:
+            raise NoNextTracebackError(
+                f"Expected traceback {e.__traceback__} to have another traceback chained on to it."
+            )
         next_traceback = e.__traceback__.tb_next
         tb.print_exception(
             type(e),

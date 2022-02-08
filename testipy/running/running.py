@@ -12,7 +12,7 @@ TestFunction = Callable[[TestContext], None]
 
 def run_tests(tests: Iterable[Union[TestFunction, type]]) -> TestResults:
     """Runs some test functions and test classes and returns their result."""
-    results: TestResults = []
+    results: list[TestResult] = []
     for test in tests:
         if inspect.isfunction(test):
             test_function = test
@@ -23,7 +23,7 @@ def run_tests(tests: Iterable[Union[TestFunction, type]]) -> TestResults:
             test_class = test
             sub_results = _run_test_class(test_class)
             result_type = _get_overall_result_type(sub_results)
-            results.append(result_type(test_class.__name__, sub_results=sub_results))
+            results.append(result_type(test_class.__name__, sub_results=sub_results))  # type: ignore[arg-type]
 
     return results
 
@@ -42,7 +42,7 @@ def _run_test_function(f: TestFunction) -> TestResult:
 
 
 def _run_test_class(test_class: type) -> TestResults:
-    results: TestResults = []
+    results: list[TestResult] = []
     test_method_names = _get_sorted_test_method_names(test_class)
     for name in test_method_names:
         instance = test_class()
@@ -52,10 +52,10 @@ def _run_test_class(test_class: type) -> TestResults:
     return results
 
 
-NameLineNo = collections.namedtuple("TestMethodNameLinNo", ["name", "line_no"])
+NameLineNo = collections.namedtuple("NameLineNo", ["name", "line_no"])
 
 
-def _get_sorted_test_method_names(test_class: type) -> list[TestFunction]:
+def _get_sorted_test_method_names(test_class: type) -> list[str]:
     name_line_no_pairs = [
         NameLineNo(name=name, line_no=_func_definition_line(method))
         for name, method in inspect.getmembers(test_class, predicate=_is_test_method)

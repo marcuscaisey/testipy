@@ -27,8 +27,8 @@ def discover_tests(path: str) -> list[Union[TestFunction, type]]:
         member
         for _, member in inspect.getmembers(module, predicate=_is_test_function_or_test_class)
     ]
-    tests = filter(_defined_in_module(module_name), tests)
-    return sorted(tests, key=_definition_line)
+    test_defined_in_module = filter(_defined_in_module(module_name), tests)
+    return sorted(test_defined_in_module, key=_definition_line)
 
 
 def _is_test_function_or_test_class(obj: Any) -> bool:

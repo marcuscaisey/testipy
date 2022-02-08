@@ -1,1 +1,1 @@
-from .friendly_formatter import FriendlyFormatter
+from .friendly_formatter import FriendlyFormatter  # noqa: F401

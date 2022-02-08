@@ -58,7 +58,8 @@ class TestFunctionBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected failing a test with message: '{failure_message}' to return {expected}, got {actual}",
+            f"expected failing a test with message: '{failure_message}' to return {expected}, "
+            f"got {actual}",
         )
 
     def test_multiple_messages_are_set_on_result_when_fail_called_multiple_times_with_message(
@@ -78,7 +79,8 @@ class TestFunctionBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected failing a test with messages: '{failure_message_1}', '{failure_message_2}' to return {expected}, got {actual}",
+            f"expected failing a test with messages: '{failure_message_1}', '{failure_message_2}' "
+            f"to return {expected}, got {actual}",
         )
 
     def test_calling_fail_with_require_ends_test_right_away(self):
@@ -145,7 +147,8 @@ class TestFunctionBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running mix of passing / failing / erroring tests to return {expected}, got {actual}",
+            f"expected running mix of passing / failing / erroring tests to return {expected}, "
+            f"got {actual}",
         )
 
 
@@ -213,7 +216,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected failing a test in a test class with message: '{failure_message}' to return {expected}, got {actual}",
+            f"expected failing a test in a test class with message: '{failure_message}' to return "
+            f"{expected}, got {actual}",
         )
 
     def test_multiple_messages_are_set_on_sub_result_when_fail_called_multiple_times_with_message(
@@ -241,7 +245,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected failing a test in a class with messages: '{failure_message_1}', '{failure_message_2}' to return {expected}, got {actual}",
+            f"expected failing a test in a class with messages: '{failure_message_1}', "
+            f"'{failure_message_2}' to return {expected}, got {actual}",
         )
 
     def test_result_is_pass_with_pass_sub_results_when_all_tests_pass(self):
@@ -263,7 +268,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running a class with multiple passing tests to return {expected}, got {actual}",
+            f"expected running a class with multiple passing tests to return {expected}, "
+            f"got {actual}",
         )
 
     def test_sub_results_are_in_same_order_as_tests(self):
@@ -307,7 +313,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running a class with a passing and a failing test to return {expected}, got {actual}",
+            f"expected running a class with a passing and a failing test to return {expected}, "
+            f"got {actual}",
         )
 
     def test_running_multiple_classes_returns_multiple_results_with_sub_results(self):
@@ -411,7 +418,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running a class with a passing / failing / erroring tests to return {expected}, got {actual}",
+            f"expected running a class with a passing / failing / erroring tests to return "
+            f"{expected}, got {actual}",
         )
 
     def test_can_run_test_functions_and_test_classes_together(self):
@@ -444,7 +452,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running test functions and tests classes together to return {expected}, got {actual}",
+            f"expected running test functions and tests classes together to return {expected}, "
+            f"got {actual}",
         )
 
     def test_methods_(self):
@@ -477,7 +486,8 @@ class TestClassBasedTests(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected running class with invalid test methods in to return {expected}, got {actual}",
+            f"expected running class with invalid test methods in to return {expected}, "
+            f"got {actual}",
         )
 
 
@@ -507,7 +517,8 @@ class TestAssertEqual(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
-            f"expected test to fail when asserting that two unequal objects are equal, got {actual}",
+            f"expected test to fail when asserting that two unequal objects are equal, "
+            f"got {actual}",
         )
 
     def test_test_fails_with_custom_message_if_given(self):

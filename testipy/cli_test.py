@@ -36,7 +36,7 @@ class TestCLI(unittest.TestCase):
                   File "{project_root}/test_data/e2e/exceptions_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
-            """
+            """  # noqa: E501
         ).format(
             project_root=get_project_root(),
             call_raises_exception_line=def_line(test_exceptions_error_the_test) + 1,

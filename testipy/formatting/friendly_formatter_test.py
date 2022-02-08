@@ -88,7 +88,7 @@ class TestFriendlyFormatter(BaseTestCase):
                   File "{project_root}/testipy/formatting/friendly_formatter_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
-            """
+                """  # noqa: E501
         ).format(
             project_root=get_project_root(),
             call_raises_exception_line=def_line(test_errors) + 1,
@@ -132,7 +132,7 @@ class TestFriendlyFormatter(BaseTestCase):
                 ValueError: oh no!
             test_passes_2 PASS
             test_fails_2 FAIL
-            """
+            """  # noqa: E501
         ).format(
             project_root=get_project_root(),
             call_raises_exception_line=def_line(test_errors) + 1,
@@ -251,7 +251,7 @@ class TestSubResults(BaseTestCase):
                   File "{project_root}/testipy/formatting/friendly_formatter_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
-            """
+            """  # noqa: E501
         ).format(
             project_root=get_project_root(),
             call_raises_exception_line=def_line(test_errors) + 1,
@@ -296,7 +296,7 @@ class TestSubResults(BaseTestCase):
             TestFoo/test_passes PASS
             TestFoo/test_fails FAIL
                 - oh no!
-            """
+                """  # noqa: E501
         ).format(
             project_root=get_project_root(),
             call_raises_exception_line=def_line(test_errors) + 1,

@@ -23,12 +23,10 @@ class FriendlyPrinter:
             [$FAILURE_MESSAGES | $ERROR_TRACEBACK]
     """
 
-    # TODO: take this as input as a config parameter instead
-    INDENT_SIZE = 4
-
-    def __init__(self, results: TestResults, *, colourise: bool = True):
+    def __init__(self, results: TestResults, *, colourise: bool = True, indent_size: int = 4):
         self._results = results
         self._colourise = colourise
+        self._indent_size = indent_size
 
     def print(self, *, out: TextIO = sys.stdout):
         formatted = self._format(self._results)
@@ -101,4 +99,4 @@ class FriendlyPrinter:
         return string_io.getvalue()
 
     def _indent(self, s: str) -> str:
-        return textwrap.indent(s, self.INDENT_SIZE * " ")
+        return textwrap.indent(s, self._indent_size * " ")

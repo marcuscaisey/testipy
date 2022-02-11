@@ -18,9 +18,9 @@ class BaseTestCase(unittest.TestCase):
             f"expected results to be formatted as:\n\n'{expected}'\ngot:\n\n'{actual}'",
         )
 
-    def print_results_to_string(self, results: TestResults) -> str:
+    def print_results_to_string(self, *args, **kwargs) -> str:
         out = io.StringIO()
-        FriendlyPrinter(results).print(out=out)
+        FriendlyPrinter(*args, **kwargs).print(out=out)
         return out.getvalue()
 
 
@@ -66,6 +66,20 @@ class TestFriendlyPrinter(BaseTestCase):
             test_fails FAIL
                 - failure message 1
                 - failure message 2
+            """
+        )
+        self.assertPrintedResultsEqual(expected, actual)
+
+    def test_indents_with_given_indent_size(self):
+        results = [FailResult("test_fails", messages=["failure message 1", "failure message 2"])]
+
+        actual = self.print_results_to_string(results, indent_size=7)
+
+        expected = dedent(
+            """
+            test_fails FAIL
+                   - failure message 1
+                   - failure message 2
             """
         )
         self.assertPrintedResultsEqual(expected, actual)

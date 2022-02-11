@@ -16,6 +16,8 @@ class TestCLI(unittest.TestCase):
             """
             test_assert_equal FAIL
                 - Expected -1 and 5 to be equal; this is most disappointing
+            test_assert_true FAIL
+                - Expected False to be True; oh man
             """
         )
         self.assertEqual(

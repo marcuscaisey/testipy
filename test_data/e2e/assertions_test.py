@@ -7,3 +7,7 @@ def test_assert_equal(t: TestContext):
     expected = -1
     actual = sub(x, y)
     t.assert_equal(expected, actual, "this is most disappointing")
+
+
+def test_assert_true(t: TestContext):
+    t.assert_true(False, "oh man")

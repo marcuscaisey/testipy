@@ -9,4 +9,3 @@
 - add flake8 / mypy as pre-commit hooks
 - add documentation
 - make e2es run as subprocesses
-- colorise output

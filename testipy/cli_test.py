@@ -91,6 +91,10 @@ class TestCLI(unittest.TestCase):
             TestAdd/test_adding_two_and_three_returns_five PASS
             TestAdd/test_adding_three_and_three_returns_seven FAIL
                 - Expected 7 and 6 to be equal; this is most disappointing
+            TestSetupAndTeardown PASS
+            TestSetupAndTeardown/test_first PASS
+            TestSetupAndTeardown/test_second PASS
+            test_class_is_torn_down PASS
             """
         )
         self.assertEqual(

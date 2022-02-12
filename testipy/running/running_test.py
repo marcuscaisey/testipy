@@ -489,3 +489,433 @@ class TestClassBasedTests(unittest.TestCase):
             f"expected running class with invalid test methods in to return {expected}, "
             f"got {actual}",
         )
+
+    def test_test_methods_state_is_isolated_from_each_other(self):
+        class TestClass:
+            def test_sets_x(self, t: TestContext):
+                self.x = 2
+
+            def test_checks_for_x(self, t: TestContext):
+                # test_sets_x set x = 2 but that state should be isolated from this test
+                t.assert_true(not hasattr(self, "x"))
+
+        actual = run_tests([TestClass])
+
+        expected = [
+            PassResult(
+                "TestClass",
+                sub_results=[PassResult("test_sets_x"), PassResult("test_checks_for_x")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with passing tests to return {expected}, got {actual}",
+        )
+
+
+class TestSetup(unittest.TestCase):
+    longMessage = False
+
+    def test_setup_is_run_before_each_test_method(self):
+        methods_called = []
+
+        class TestSetup:
+            def setup(self):
+                methods_called.append("setup")
+
+            def test_first(self, t: TestContext):
+                methods_called.append("test_first")
+
+            def test_second(self, t: TestContext):
+                methods_called.append("test_second")
+
+        actual_results = run_tests([TestSetup])
+
+        expected_results = [
+            PassResult(
+                "TestSetup",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected_results,
+            actual_results,
+            f"expected running class with setup method to return {expected_results}, got {actual_results}",
+        )
+        expected_methods_called = ["setup", "test_first", "setup", "test_second"]
+        self.assertEqual(
+            expected_methods_called,
+            methods_called,
+            f"expected running class with setup method to call methods in order {expected_methods_called}, got {methods_called}",
+        )
+
+    def test_variables_can_be_shared_between_setup_and_test_method(self):
+        class TestSetup:
+            def setup(self):
+                self.x = 2
+
+            def test_first(self, t: TestContext):
+                # setup should have set x = 2
+                t.assert_equal(2, self.x)
+
+            def test_second(self, t: TestContext):
+                # setup should have set x = 2
+                t.assert_equal(2, self.x)
+
+        actual = run_tests([TestSetup])
+
+        expected = [
+            PassResult(
+                "TestSetup",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with setup method to return {expected}, got {actual}",
+        )
+
+    def test_result_is_error_if_exception_raised_in_setup(self):
+        class TestFailsSetup:
+            def setup(self):
+                raise ValueError("oh no!")
+
+            def test_wont_reach_this_test(self, t: TestContext):
+                t.assert_equal(1, 2)
+
+        actual = run_tests([TestFailsSetup])
+
+        expected = [ErrorResult("TestFailsSetup", error=ValueError("oh no!"))]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with erroring setup method to return {expected}, got {actual}",
+        )
+
+    def test_error_result_contains_test_results_from_before_setup_error_if_setup_error_raised(self):
+        run_count = 0
+
+        class TestFailsSetup:
+            def setup(self):
+                """Raises an exception on the fourth run."""
+                nonlocal run_count
+                run_count += 1
+                if run_count == 4:
+                    raise ValueError("oh no in setup!")
+
+            def test_passes(self, t: TestContext):
+                t.assert_equal(1, 1)
+
+            def test_fails(self, t: TestContext):
+                t.assert_equal(1, 2)
+
+            def test_errors(self, t: TestContext):
+                raise ValueError("oh no!")
+
+            def test_wont_reach_this_test(self, t: TestContext):
+                pass
+
+        actual = run_tests([TestFailsSetup])
+
+        expected = [
+            ErrorResult(
+                "TestFailsSetup",
+                error=ValueError("oh no in setup!"),
+                sub_results=[
+                    PassResult("test_passes"),
+                    FailResult("test_fails", messages=["Expected 1 and 2 to be equal"]),
+                    ErrorResult("test_errors", error=ValueError("oh no!")),
+                ],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with erroring setup method to return {expected}, got {actual}",
+        )
+
+    def test_setup_is_isolated_from_any_state_set_in_previous_test_methods(self):
+        class TestSetup:
+            def setup(self):
+                # test_sets_x set x = 3 but setup should be isolated from that state change so won't
+                # see it
+                if hasattr(self, "x"):
+                    self.can_see_x = True
+                else:
+                    self.can_see_x = False
+
+            def test_sets_x(self, t: TestContext):
+                t.assert_equal(1, 1)
+                self.x = 3
+
+            def test_checks_for_x(self, t: TestContext):
+                t.assert_true(not self.can_see_x)
+
+        actual = run_tests([TestSetup])
+
+        expected = [
+            PassResult(
+                "TestSetup",
+                sub_results=[PassResult("test_sets_x"), PassResult("test_checks_for_x")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with setup method to return {expected}, got {actual}",
+        )
+
+
+class TestSetupClass(unittest.TestCase):
+    longMessage = False
+
+    def test_setup_class_is_run_before_all_test_methods(self):
+        methods_called = []
+
+        class TestSetupClass:
+            @classmethod
+            def setup_class(cls):
+                methods_called.append("setup_class")
+
+            def test_first(self, t: TestContext):
+                methods_called.append("test_first")
+
+            def test_second(self, t: TestContext):
+                methods_called.append("test_second")
+
+        actual_results = run_tests([TestSetupClass])
+
+        expected_results = [
+            PassResult(
+                "TestSetupClass",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected_results,
+            actual_results,
+            f"expected running class with setup_class method to return {expected_results}, got {actual_results}",
+        )
+        expected_methods_called = ["setup_class", "test_first", "test_second"]
+        self.assertEqual(
+            expected_methods_called,
+            methods_called,
+            f"expected running class with setup_class method to call methods in order {expected_methods_called}, got {methods_called}",
+        )
+
+    def test_variables_can_be_shared_between_setup_class_and_test_methods(self):
+        class TestSetupClass:
+            @classmethod
+            def setup_class(cls):
+                cls.x = 1
+
+            def test_first(self, t: TestContext):
+                # setup_class should have set x = 1
+                t.assert_equal(1, self.x)
+
+            def test_second(self, t: TestContext):
+                # x should still be 1 from setup_class
+                t.assert_equal(1, self.x)
+
+        actual = run_tests([TestSetupClass])
+
+        expected = [
+            PassResult(
+                "TestSetupClass",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with setup_class method to return {expected}, got {actual}",
+        )
+
+    def test_result_is_error_if_exception_raised_in_setup_class(self):
+        class TestFailsSetupClass:
+            @classmethod
+            def setup_class(self):
+                raise ValueError("oh no!")
+
+            def test_wont_reach_this_test(self, t: TestContext):
+                t.assert_equal(1, 2)
+
+        actual = run_tests([TestFailsSetupClass])
+
+        expected = [ErrorResult("TestFailsSetupClass", error=ValueError("oh no!"))]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with erroring setup_class method to return {expected}, got {actual}",
+        )
+
+
+class TestTeardown(unittest.TestCase):
+    longMessage = False
+
+    def test_teardown_is_run_after_each_method(self):
+        methods_called = []
+
+        class TestTeardown:
+            def teardown(self):
+                methods_called.append("teardown")
+
+            def test_first(self, t: TestContext):
+                methods_called.append("test_first")
+
+            def test_second(self, t: TestContext):
+                methods_called.append("test_second")
+
+        actual_results = run_tests([TestTeardown])
+
+        expected_results = [
+            PassResult(
+                "TestTeardown",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected_results,
+            actual_results,
+            f"expected running class with teardown method to return {expected_results}, got {actual_results}",
+        )
+        expected_methods_called = ["test_first", "teardown", "test_second", "teardown"]
+        self.assertEqual(
+            expected_methods_called,
+            methods_called,
+            f"expected running class with teardown method to call methods in order {expected_methods_called}, got {methods_called}",
+        )
+
+    def test_error_result_contains_test_results_from_before_teardown_error_if_teardown_error_raised(
+        self,
+    ):
+        run_count = 0
+
+        class TestFailsTeardown:
+            def teardown(self):
+                """Raises an exception on the third run."""
+                nonlocal run_count
+                run_count += 1
+                if run_count == 3:
+                    raise ValueError("oh no in teardown!")
+
+            def test_passes(self, t: TestContext):
+                t.assert_equal(1, 1)
+
+            def test_fails(self, t: TestContext):
+                t.assert_equal(1, 2)
+
+            def test_errors(self, t: TestContext):
+                raise ValueError("oh no!")
+
+            def test_wont_reach_this(self, t: TestContext):
+                pass
+
+        actual = run_tests([TestFailsTeardown])
+
+        expected = [
+            ErrorResult(
+                "TestFailsTeardown",
+                error=ValueError("oh no in teardown!"),
+                sub_results=[
+                    PassResult("test_passes"),
+                    FailResult("test_fails", messages=["Expected 1 and 2 to be equal"]),
+                    ErrorResult("test_errors", error=ValueError("oh no!")),
+                ],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with erroring teardown method to return {expected}, got {actual}",
+        )
+
+    def test_tests_are_isolated_from_any_state_set_in_teardown_method(self):
+        class TestTeardown:
+            def teardown(self):
+                self.x = 2
+
+            def test_passes(self, t: TestContext):
+                t.assert_equal(1, 1)
+
+            def test_cant_see_x(self, t: TestContext):
+                # teardown set x = 2 but this test should be isolated from that state change
+                t.assert_true(not hasattr(self, "x"))
+
+        actual = run_tests([TestTeardown])
+
+        expected = [
+            PassResult(
+                "TestTeardown",
+                sub_results=[PassResult("test_passes"), PassResult("test_cant_see_x")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with teardown method to return {expected}, got {actual}",
+        )
+
+
+class TestTeardownClass(unittest.TestCase):
+    longMessage = False
+
+    def test_teardown_class_is_run_once_after_all_test_methods(self):
+        methods_called = []
+
+        class TestTeardownClass:
+            @classmethod
+            def teardown_class(cls):
+                methods_called.append("teardown_class")
+
+            def test_first(self, t: TestContext):
+                methods_called.append("test_first")
+
+            def test_second(self, t: TestContext):
+                methods_called.append("test_second")
+
+        actual_results = run_tests([TestTeardownClass])
+
+        expected_results = [
+            PassResult(
+                "TestTeardownClass",
+                sub_results=[PassResult("test_first"), PassResult("test_second")],
+            )
+        ]
+        self.assertEqual(
+            expected_results,
+            actual_results,
+            f"expected running class with teardown_class method to return {expected_results}, got {actual_results}",
+        )
+        expected_methods_called = ["test_first", "test_second", "teardown_class"]
+        self.assertEqual(
+            expected_methods_called,
+            methods_called,
+            f"expected running class with teardown_class method to call methods in order {expected_methods_called}, got {methods_called}",
+        )
+
+    def test_result_is_error_if_exception_raised_in_teardown_class(self):
+        class TestFailsTeardownClass:
+            @classmethod
+            def teardown_class(self):
+                raise ValueError("oh no!")
+
+            def test_passes(self, t: TestContext):
+                t.assert_equal(1, 1)
+
+        actual = run_tests([TestFailsTeardownClass])
+
+        expected = [
+            ErrorResult(
+                "TestFailsTeardownClass",
+                error=ValueError("oh no!"),
+                sub_results=[PassResult("test_passes")],
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected running class with erroring teardown_class method to return {expected}, got {actual}",
+        )

@@ -21,11 +21,8 @@ def run_tests(tests: Iterable[Union[TestFunction, type]]) -> TestResults:
 
         elif inspect.isclass(test):
             test_class = test
-            sub_results = _run_test_class(test_class)
-            result_type = _get_overall_result_type(sub_results)
-            results.append(
-                result_type(test_class.__name__, sub_results=sub_results),
-            )  # type: ignore[arg-type]
+            result = _run_test_class(test_class)
+            results.append(result)
 
     return results
 
@@ -43,14 +40,96 @@ def _run_test_function(f: TestFunction) -> TestResult:
     return PassResult(f.__name__)
 
 
-def _run_test_class(test_class: type) -> TestResults:
+class TestClassSetupError(Exception):
+    """Raised when an error occurs during test class setup."""
+
+    def __init__(self, raised_error: Exception):
+        self.raised_error = raised_error
+
+
+class TestSetupError(Exception):
+    """Raised when an error occurs during test setup."""
+
+    def __init__(self, raised_error: Exception, current_results: TestResults = None):
+        self.raised_error = raised_error
+        self.current_results = current_results or []
+
+
+class TestTeardownError(Exception):
+    """Raised when an error occurs during test teardown."""
+
+    def __init__(self, raised_error: Exception, current_results: TestResults = None):
+        self.raised_error = raised_error
+        self.current_results = current_results or []
+
+
+class TestClassTeardownError(Exception):
+    """Raised when an error occurs during test class teardown."""
+
+    def __init__(self, raised_error: Exception, results: TestResults):
+        self.raised_error = raised_error
+        self.results = results
+
+
+def _run_test_class(test_class: type) -> TestResult:
+    try:
+        sub_results = _run_test_methods(test_class)
+    except TestClassSetupError as e:
+        return ErrorResult(test_class.__name__, error=e.raised_error)
+    except TestSetupError as e:
+        return ErrorResult(test_class.__name__, error=e.raised_error, sub_results=e.current_results)
+    except TestTeardownError as e:
+        return ErrorResult(test_class.__name__, error=e.raised_error, sub_results=e.current_results)
+    except TestClassTeardownError as e:
+        return ErrorResult(test_class.__name__, error=e.raised_error, sub_results=e.results)
+    result_type = _get_overall_result_type(sub_results)
+    return result_type(test_class.__name__, sub_results=sub_results)
+
+
+def _setup_class(test_class: type):
+    if hasattr(test_class, "setup_class"):
+        try:
+            test_class.setup_class()
+        except Exception as e:
+            raise TestClassSetupError(raised_error=e)
+
+
+def _setup(instance: object, current_results: TestResults):
+    if hasattr(instance, "setup"):
+        try:
+            instance.setup()
+        except Exception as e:
+            raise TestSetupError(raised_error=e, current_results=current_results)
+
+
+def _teardown(instance: object, current_results: TestResults):
+    if hasattr(instance, "teardown"):
+        try:
+            instance.teardown()
+        except Exception as e:
+            raise TestTeardownError(raised_error=e, current_results=current_results)
+
+
+def _teardown_class(test_class, results: TestResults):
+    if hasattr(test_class, "teardown_class"):
+        try:
+            test_class.teardown_class()
+        except Exception as e:
+            raise TestClassTeardownError(raised_error=e, results=results)
+
+
+def _run_test_methods(test_class: type) -> TestResults:
     results: list[TestResult] = []
+    _setup_class(test_class)
     test_method_names = _get_sorted_test_method_names(test_class)
     for name in test_method_names:
         instance = test_class()
+        _setup(instance, current_results=results)
         test_method = getattr(instance, name)
         result = _run_test_function(test_method)
         results.append(result)
+        _teardown(instance, current_results=results)
+    _teardown_class(test_class, results=results)
     return results
 
 

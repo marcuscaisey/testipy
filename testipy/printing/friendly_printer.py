@@ -4,7 +4,7 @@ import textwrap
 import traceback as tb
 from typing import TextIO
 
-import rich
+from rich import console
 
 from ..running import ErrorResult, FailResult, PassResult, TestResults
 
@@ -30,7 +30,8 @@ class FriendlyPrinter:
 
     def print(self, *, out: TextIO = sys.stdout):
         formatted = self._format(self._results)
-        rich.print(formatted, file=out)
+        c = console.Console(file=out)
+        c.print(formatted, highlight=False)
 
     def _format(self, results: TestResults, prefix: str = "") -> str:
         formatted_results = []

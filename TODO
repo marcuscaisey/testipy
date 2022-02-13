@@ -1,11 +1,14 @@
 - "bootstrap" tests by testing with testipy
 - add handling of invalid paths to discovery
-- group tests with class with set_up / tear_down
 - subtests (in context manager?)
 - output in cli and xml xUnit format
-- colour output
 - indent multiline failure messages
 - find cleaner way to test traceback formatting
 - add flake8 / mypy as pre-commit hooks
 - add documentation
 - make e2es run as subprocesses
+- add summary to friendly print output
+- test multiple modules at once
+- discover modules
+- time each test
+- add context to test failure messages? line number of failed assertion maybe?

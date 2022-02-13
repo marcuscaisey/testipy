@@ -7,7 +7,6 @@
 - add flake8 / mypy as pre-commit hooks
 - add documentation
 - make e2es run as subprocesses
-- add summary to friendly print output
 - test multiple modules at once
 - discover modules
 - time each test

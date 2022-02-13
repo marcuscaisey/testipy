@@ -27,20 +27,29 @@ class FriendlyPrinter:
         self._results = results
         self._colourise = colourise
         self._indent_size = indent_size
+        self._tests_run = 0
+        self._tests_passed = 0
+        self._tests_failed = 0
+        self._tests_errored = 0
 
     def print(self, *, out: TextIO = sys.stdout):
         formatted = self._format(self._results)
         c = console.Console(file=out)
         c.print(formatted, highlight=False)
+        c.print(self._summary(), highlight=False)
 
     def _format(self, results: TestResults, prefix: str = "") -> str:
         formatted_results = []
         for result in results:
+            self._tests_run += 1
             if isinstance(result, PassResult):
+                self._tests_passed += 1
                 formatted_results.append(self._format_pass_result(result, prefix))
             elif isinstance(result, FailResult):
+                self._tests_failed += 1
                 formatted_results.append(self._format_fail_result(result, prefix))
             elif isinstance(result, ErrorResult):
+                self._tests_errored += 1
                 formatted_results.append(self._format_error_result(result, prefix))
         formatted = "\n".join(formatted_results)
         return formatted
@@ -69,8 +78,11 @@ class FriendlyPrinter:
         if test_prefix:
             formatted = f"{test_prefix}/{formatted}"
         if self._colourise and style:
-            formatted = f"[{style}]{formatted}[/ {style}]"
+            formatted = self._style(formatted, style)
         return formatted
+
+    def _style(self, s: str, style: str) -> str:
+        return f"[{style}]{s}[/{style}]"
 
     def _format_sub_results(self, test_name: str, sub_results: TestResults) -> list[str]:
         lines: list[str] = []
@@ -101,3 +113,16 @@ class FriendlyPrinter:
 
     def _indent(self, s: str) -> str:
         return textwrap.indent(s, self._indent_size * " ")
+
+    def _summary(self) -> str:
+        plural = "s" if self._tests_run > 1 else ""
+        summary = f"{self._tests_run} test{plural} run;"
+        parts = []
+        if self._tests_passed:
+            parts.append(self._style(f"{self._tests_passed} passed", "green"))
+        if self._tests_failed:
+            parts.append(self._style(f"{self._tests_failed} failed", "red"))
+        if self._tests_errored:
+            parts.append(self._style(f"{self._tests_errored} errored", "blue"))
+        summary += " " + ", ".join(parts)
+        return self._style(summary, "bold")

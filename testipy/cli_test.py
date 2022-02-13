@@ -18,6 +18,7 @@ class TestCLI(unittest.TestCase):
                 - Expected -1 and 5 to be equal; this is most disappointing
             test_assert_true FAIL
                 - Expected False to be True; oh man
+            2 tests run; 2 failed
             """
         )
         self.assertEqual(
@@ -38,6 +39,7 @@ class TestCLI(unittest.TestCase):
                   File "{project_root}/test_data/e2e/exceptions_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
+            1 test run; 1 errored
             """  # noqa: E501
         ).format(
             project_root=get_project_root(),
@@ -60,6 +62,7 @@ class TestCLI(unittest.TestCase):
                 - multiple failures are allowed in the same test
             test_require_failure FAIL
                 - requiring a failure stops the test
+            2 tests run; 2 failed
             """
         )
         self.assertEqual(
@@ -74,6 +77,7 @@ class TestCLI(unittest.TestCase):
         expected = dedent(
             """
             test_passes PASS
+            1 test run; 1 passed
             """
         )
         self.assertEqual(
@@ -95,6 +99,7 @@ class TestCLI(unittest.TestCase):
             TestSetupAndTeardown/test_first PASS
             TestSetupAndTeardown/test_second PASS
             test_class_is_torn_down PASS
+            7 tests run; 5 passed, 2 failed
             """
         )
         self.assertEqual(

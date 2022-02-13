@@ -32,7 +32,12 @@ class TestFriendlyPrinter(BaseTestCase):
 
         actual = self.print_results_to_string(results)
 
-        expected = "test_passes PASS\n"
+        expected = dedent(
+            """
+            test_passes PASS
+            1 test run; 1 passed
+            """
+        )
         self.assertPrintedResultsEqual(expected, actual)
 
     def test_formats_failing_results_without_messages_as_a_single_line(self):
@@ -40,7 +45,12 @@ class TestFriendlyPrinter(BaseTestCase):
 
         actual = self.print_results_to_string(results)
 
-        expected = "test_fails FAIL\n"
+        expected = dedent(
+            """
+            test_fails FAIL
+            1 test run; 1 failed
+            """
+        )
         self.assertPrintedResultsEqual(expected, actual)
 
     def test_indents_message_on_next_line_when_failing_result_has_message(self):
@@ -52,6 +62,7 @@ class TestFriendlyPrinter(BaseTestCase):
             """
             test_fails FAIL
                 - failure message
+            1 test run; 1 failed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -66,6 +77,7 @@ class TestFriendlyPrinter(BaseTestCase):
             test_fails FAIL
                 - failure message 1
                 - failure message 2
+            1 test run; 1 failed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -80,6 +92,7 @@ class TestFriendlyPrinter(BaseTestCase):
             test_fails FAIL
                    - failure message 1
                    - failure message 2
+            1 test run; 1 failed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -110,6 +123,7 @@ class TestFriendlyPrinter(BaseTestCase):
                   File "{project_root}/testipy/printing/friendly_printer_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
+            1 test run; 1 errored
             """  # noqa: E501
         ).format(
             project_root=get_project_root(),
@@ -154,6 +168,7 @@ class TestFriendlyPrinter(BaseTestCase):
                 ValueError: oh no!
             test_passes_2 PASS
             test_fails_2 FAIL
+            5 tests run; 2 passed, 2 failed, 1 errored
             """  # noqa: E501
         ).format(
             project_root=get_project_root(),
@@ -182,6 +197,7 @@ class TestSubResults(BaseTestCase):
             TestFoo PASS
             TestFoo/test_passes_1 PASS
             TestFoo/test_passes_2 PASS
+            3 tests run; 3 passed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -205,6 +221,7 @@ class TestSubResults(BaseTestCase):
             TestFoo/test_passes PASS
             TestFoo/test_fails FAIL
                 - oh no!
+            3 tests run; 1 passed, 2 failed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -231,6 +248,7 @@ class TestSubResults(BaseTestCase):
             TestFoo/test_passes PASS
             TestFoo/test_fails FAIL
                 - oh no!
+            3 tests run; 1 passed, 2 failed
             """
         )
         self.assertPrintedResultsEqual(expected, actual)
@@ -273,6 +291,7 @@ class TestSubResults(BaseTestCase):
                   File "{project_root}/testipy/printing/friendly_printer_test.py", line {raise_value_error_line}, in raises_exception
                     raise ValueError("oh no!")
                 ValueError: oh no!
+            4 tests run; 1 passed, 1 failed, 2 errored
             """  # noqa: E501
         ).format(
             project_root=get_project_root(),
@@ -318,6 +337,7 @@ class TestSubResults(BaseTestCase):
             TestFoo/test_passes PASS
             TestFoo/test_fails FAIL
                 - oh no!
+            3 tests run; 1 passed, 1 failed, 1 errored
             """  # noqa: E501
         ).format(
             project_root=get_project_root(),

@@ -9,5 +9,3 @@
 - add flake8 / mypy as pre-commit hooks
 - add documentation
 - make e2es run as subprocesses
-- separate out class based testing logic and testing into another separate modules from function
-  based

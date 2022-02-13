@@ -137,5 +137,79 @@ class TestAssertTrue(unittest.TestCase):
         self.assertEqual(
             expected,
             actual,
+            f"expected asserting truthy value to be True to return {expected}, got {actual}",
+        )
+
+
+class TestAssertFalse(unittest.TestCase):
+    longMessage = False
+
+    def test_test_passes_if_value_is_false(self):
+        def test_passes(t: TestContext):
+            t.assert_false(False)
+
+        actual = run_tests([test_passes])
+
+        expected = [PassResult("test_passes")]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected asserting that False is False to return {expected}, got {actual}",
+        )
+
+    def test_test_fails_with_default_message_if_value_is_true(self):
+        def test_fails(t: TestContext):
+            t.assert_false(True)
+
+        actual = run_tests([test_fails])
+
+        expected = [FailResult("test_fails", messages=[f"Expected True to be False"])]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected asserting that True is False to return {expected}, got {actual}",
+        )
+
+    def test_test_fails_with_custom_message_if_given(self):
+        def test_fails(t: TestContext):
+            t.assert_false(True, "this is most disappointing")
+
+        actual = run_tests([test_fails])
+
+        expected = [
+            FailResult(
+                "test_fails", messages=["Expected True to be False; this is most disappointing"]
+            )
+        ]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected test to fail with custom failure message, got {actual}",
+        )
+
+    def test_calling_with_require_ends_test_right_away(self):
+        def test_fails(t: TestContext):
+            t.assert_false(True, require=True)
+            t.fail("won't reach here")
+
+        actual = run_tests([test_fails])
+
+        expected = [FailResult("test_fails", messages=["Expected True to be False"])]
+        self.assertEqual(
+            expected,
+            actual,
             f"expected asserting with require to return {expected}, got {actual}",
+        )
+
+    def test_test_fails_if_value_is_falsey(self):
+        def test_fails(t: TestContext):
+            t.assert_false([])
+
+        actual = run_tests([test_fails])
+
+        expected = [FailResult("test_fails", messages=["Expected [] to be False"])]
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected asserting falsey value to be False to return {expected}, got {actual}",
         )

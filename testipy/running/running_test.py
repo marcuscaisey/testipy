@@ -497,7 +497,7 @@ class TestClassBasedTests(unittest.TestCase):
 
             def test_checks_for_x(self, t: TestContext):
                 # test_sets_x set x = 2 but that state should be isolated from this test
-                t.assert_true(not hasattr(self, "x"))
+                t.assert_false(hasattr(self, "x"))
 
         actual = run_tests([TestClass])
 
@@ -651,7 +651,7 @@ class TestSetup(unittest.TestCase):
                 self.x = 3
 
             def test_checks_for_x(self, t: TestContext):
-                t.assert_true(not self.can_see_x)
+                t.assert_false(self.can_see_x)
 
         actual = run_tests([TestSetup])
 
@@ -842,7 +842,7 @@ class TestTeardown(unittest.TestCase):
 
             def test_cant_see_x(self, t: TestContext):
                 # teardown set x = 2 but this test should be isolated from that state change
-                t.assert_true(not hasattr(self, "x"))
+                t.assert_false(hasattr(self, "x"))
 
         actual = run_tests([TestTeardown])
 

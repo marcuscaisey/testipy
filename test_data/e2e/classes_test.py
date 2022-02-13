@@ -37,13 +37,13 @@ class TestSetupAndTeardown:
         counter -= 1
 
     def test_first(self, t: TestContext):
-        t.assert_true(not self.torn_class_down)
+        t.assert_false(self.torn_class_down)
         # setup_class: counter = 0
         # setup (test_first): counter = counter + 2 = 2
         t.assert_equal(2, self.counter)
 
     def test_second(self, t: TestContext):
-        t.assert_true(not self.torn_class_down)
+        t.assert_false(self.torn_class_down)
         # teardownc(test_first): counter = counter - 1 = 1
         # setup (test_second): counter = counter + 2 = 3
         t.assert_equal(3, self.counter)

@@ -38,3 +38,12 @@ class TestContext:
         if message:
             failure_message += f"; {message}"
         self.fail(failure_message, require=require)
+
+    def assert_false(self, value: Any, message: str = "", require: bool = False):
+        """Assert that value is False, failing the test if not."""
+        if value is False:
+            return
+        failure_message = f"Expected {repr(value)} to be False"
+        if message:
+            failure_message += f"; {message}"
+        self.fail(failure_message, require=require)

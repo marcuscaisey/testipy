@@ -10,7 +10,7 @@ class TestCLI(unittest.TestCase):
     longMessage = False
 
     def test_assertions(self):
-        actual = self.run_test_file("test_data/e2e/assertions_test.py")
+        actual = self.run_test_files("test_data/e2e/assertions_test.py")
 
         expected = dedent(
             """
@@ -28,7 +28,7 @@ class TestCLI(unittest.TestCase):
         )
 
     def test_exceptions(self):
-        actual = self.run_test_file("test_data/e2e/exceptions_test.py")
+        actual = self.run_test_files("test_data/e2e/exceptions_test.py")
 
         expected = dedent(
             """
@@ -53,7 +53,7 @@ class TestCLI(unittest.TestCase):
         )
 
     def test_failures(self):
-        actual = self.run_test_file("test_data/e2e/failures_test.py")
+        actual = self.run_test_files("test_data/e2e/failures_test.py")
 
         expected = dedent(
             """
@@ -72,7 +72,7 @@ class TestCLI(unittest.TestCase):
         )
 
     def test_passing(self):
-        actual = self.run_test_file("test_data/e2e/passing_test.py")
+        actual = self.run_test_files("test_data/e2e/passing_test.py")
 
         expected = dedent(
             """
@@ -87,7 +87,7 @@ class TestCLI(unittest.TestCase):
         )
 
     def test_classes(self):
-        actual = self.run_test_file("test_data/e2e/classes_test.py")
+        actual = self.run_test_files("test_data/e2e/classes_test.py")
 
         expected = dedent(
             """
@@ -108,8 +108,31 @@ class TestCLI(unittest.TestCase):
             f"expected cli to output:\n\n{expected}\ngot:\n\n{actual}",
         )
 
-    def run_test_file(self, path: str) -> str:
+    def test_multiple_files(self):
+        actual = self.run_test_files(
+            "test_data/e2e/failures_test.py",
+            "test_data/e2e/passing_test.py",
+        )
+
+        expected = dedent(
+            """
+            test_multiple_failures FAIL
+                - failure message
+                - multiple failures are allowed in the same test
+            test_require_failure FAIL
+                - requiring a failure stops the test
+            test_passes PASS
+            3 tests run; 1 passed, 2 failed
+            """
+        )
+        self.assertEqual(
+            expected,
+            actual,
+            f"expected cli to output:\n\n{expected}\ngot:\n\n{actual}",
+        )
+
+    def run_test_files(self, *paths: str) -> str:
         """Run a test file and return the output."""
         out = io.StringIO()
-        testipy(path, out)
+        testipy(paths, out)
         return out.getvalue()
